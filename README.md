@@ -14,7 +14,7 @@ The program will read the input file and the XML file in the same directory, and
 ## File Structure
 The project consists of several java classes including:
 
-* **Main.java** which is the entry point of the program and contains the main function that controls the flow of the program.
+* **Ex1.java** (main) which is the entry point of the program and contains the main function that controls the flow of the program.
 * **Network.java** which represents the Bayesian Network and contains the variables and the factors of the network.
 * **Variable.java** which represents a variable in the network and contains its properties such as its name, values, and parents.
 * **Factor.java** which represents a factor in the network and contains its properties such as the variables it contains and its probability table.
@@ -31,3 +31,6 @@ This implementation of Bayesian Network using Variable Elimination algorithm can
 3. **Variable Elimination Algorithm with custom heuristic elimination order:** An optimized algorithm that uses a custom heuristic elimination order based on the number of appearances of variables in factors to find probability in a graphical model.
 
 The project includes the implementation of each algorithm and the calculation of both the probability and the number of additions and multiplications required for each algorithm.
+
+![image](https://user-images.githubusercontent.com/97172662/212309618-2d010a2b-56dc-4279-8faf-bb47bd5ae41f.png)
+
