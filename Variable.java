@@ -33,18 +33,6 @@ public class Variable {
         this.cpt = this.updateCPT();
     }
 
-    public Variable(String name, List<String> outcomes, List<Double> values, List<Variable> givens, LinkedHashMap<String,Double> cpt) {
-        this.name = name;
-        this.outcomes = outcomes;
-        this.values = values;
-        this.givens = givens;
-        this.cpt = cpt;
-    }
-
-    public Variable(String varName) {
-        this.name = varName;
-    }
-
     //set values for the list values;
     public LinkedHashMap<String, Double> updateCPT() {
         LinkedHashMap<String, Double> CPT = new LinkedHashMap<String, Double>();
@@ -54,20 +42,13 @@ public class Variable {
 
         int givenAmount = this.givens.size();
 
-        //System.out.println(this.getName() + ".Givens: " + this.givens);
-        //System.out.println(this.getName() + " has " + this.values.size() + " Values: " + this.values);
-
         if (givenAmount == 0) {
             for (int i = 0; i < this.outcomes.size(); i++) {
                 currOutcome = this.outcomes.get(i);
                 currValue = this.values.get(i);
                 CPT.put(currOutcome, currValue);
-
-                //currOutcome = currOutcome + "/";
-                //currValue = this.values.get(i+1);
-                //CPT.put(currOutcome, currValue);
             }
-            //System.out.println(this.getName() + ".CPT TO STRING: " + CPT.toString());
+
             return CPT;
         }
 
@@ -91,7 +72,6 @@ public class Variable {
             jumps *= given.outcomes.size();
         }
 
-        //List<String> options = new ArrayList<String>(jumps);
         String[] options = new String[jumps];
 
         for (int i = 0; i < options.length; i++) {
@@ -112,34 +92,17 @@ public class Variable {
             }
         }
 
-
-        //For debugging, this loop print the strings combinations.
-        for (int i = 0; i < options.length; i++) {
-            //System.out.println("i=" + i*this.outcomes.size() + ": " + options[i]);
-            for (int j = 0; j < this.outcomes.size(); j++) {
-                //System.out.println("i=" + i*this.outcomes.size() + ": " + options[i] + "~".repeat(j));
-            }
-        }
-
-        //List<String> tempOptionsList = Arrays.stream(options).toList();
         List<String> tempOptionsList = Arrays.stream(options).collect(Collectors.toList());
         List<Double> tempValuesList = this.values;
-
-        //System.out.println("TEMP VALUE LIST: " + tempValuesList);
 
         int place = 0;
         for (int i = 0; i < tempOptionsList.size(); i++) {
             for (int j = 0; j < this.outcomes.size(); j++) {
-                //System.out.println(j + " out of " + this.outcomes.size());
-                //CPT.put(tempOptionsList.get(i), tempValuesList.get(i*2));
-                //System.out.println("i*2+j = " + (int)(i*2+j));
-                //CPT.put(tempOptionsList.get(i) + ("~".repeat(j)), tempValuesList.get(place));
                 CPT.put(tempOptionsList.get(i) + (this.outcomes.get(j)), tempValuesList.get(place));
                 place++;
             }
         }
 
-        //System.out.println(this.getName() + ".CPT TO STRING: " + CPT.toString());
         return CPT;
     }
 
@@ -206,11 +169,12 @@ public class Variable {
 
 
     public double getProb(String str, Network network) {
+
+        // If this variable has no givens, return the probability value corresponding to str in the cpt
         if (this.givens.size() == 0) {
             if (this.cpt.get(str) == null) {
                 for (String name : this.cpt.keySet()) {
                     if (str.contains(name)) {
-                        System.out.println(this.cpt.get(name));
                         return this.cpt.get(name);
                     }
                 }
@@ -223,48 +187,27 @@ public class Variable {
             return this.cpt.get(str);
 
         //else (which means -> this.givens.size() > 0)
-        //get the str of its parents.
+
+        // If this variable has givens,
+        // Build the key for the cpt using the values of the given variables as stored in the
+        // evidences field of the Network
 
         str = "";
 
-        //System.out.println("VAR NAME: " + this.getName());
         for (Variable variable : this.givens) {
-            //System.out.println("var " + variable.getName() + "'s value is " + network.evidences.get(variable.getName()));
             str = str + network.evidences.get(variable.getName());
         }
 
-        //System.out.println("INSIDE: outcomes = " + this.outcomes);
-        //System.out.println("INSIDE: " + network.evidences);
-        //System.out.println("INSIDE: evidence = " + network.getEvidences().get(this.name));
 
         for (int i = 0; i < this.outcomes.size() ; i++) {
             if (network.getEvidences().get(this.name).equals(this.outcomes.get(i))) {
-                //System.out.println("Heyo, put " + this.outcomes.get(i));
-                //System.out.println("INSIDE: i=" + i);
-                //System.out.println("INSIDE: outcome=" + this.outcomes.get(i));
-                //str = str + "~".repeat(i);
                 str = str + this.outcomes.get(i);
             }
         }
-
-        //System.out.println("Variable " + this.getName() + ", got str: " + str + ", output: " + this.cpt.get(str));
-        //System.out.println(this.cpt);
         return this.cpt.get(str);
     }
 
-    public String convert_last_outcome(String str) {
-        for (int i = 0; i < this.outcomes.size(); i++) {
-            if (this.outcomes.get(i).equals(str)) {
-                //str = cpt.keySet().stream().toList().get(i);
-                List<String> keyList = cpt.keySet().stream().collect(Collectors.toList());
-                str = keyList.get(i);
-            }
-        }
-        return str;
-    }
-
     public void print() {
-        //System.out.println(" ");
         System.out.println("Variable " + this.name);
         System.out.println("has " + this.outcomes.size() + " out comes: " + outcomes);
         System.out.println("has " + this.givens.size() + " parents: " + givens);

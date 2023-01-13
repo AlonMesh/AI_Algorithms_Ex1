@@ -1,12 +1,6 @@
 import java.io.IOException;
-import java.math.RoundingMode;
-import java.sql.SQLOutput;
 import java.text.DecimalFormat;
 import java.util.*;
-import java.util.function.DoubleToIntFunction;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.zip.ZipFile;
 
 public class Algorithms {
     //Algorithm 1:
@@ -15,7 +9,6 @@ public class Algorithms {
         List<Variable> list_of_unknown_variables = new ArrayList<Variable>();
         List<Variable> list_of_known_variables = new ArrayList<Variable>();
 
-        System.out.println("NET: " + network.getVariables());
         for (Variable variable : network.getVariables()) {
             String valueByKey = network.getEvidences().get(variable.getName());
 
@@ -34,48 +27,31 @@ public class Algorithms {
 
         if (network.getEvidences().values().stream().noneMatch(value -> value.equals("%%%"))) {
             // If there are no hidden variables, calculate the probability of the query variable given the known variables and evidence directly
-            Variable queryVariable = network.findByName(queryDetails[0]);
+            Variable queryVariable = network.find_variable_by_name(queryDetails[0]);
             String queryOutcome = queryDetails[1];
             double probability = queryVariable.getProb(queryOutcome, network);
 
             // Print the probability
-            System.out.println("CATCH IT!!");
-            System.out.println("p=" + printRoundedDouble(probability) + ",0,0");
             GlobalVars.outputFile.write(printRoundedDouble(probability) + ",0,0");
             GlobalVars.outputFile.newLine();
         }
 
-        //System.out.println("FirstList:\n" + list_of_known_variables + "\n" + list_of_unknown_variables);
 
         else {
-            System.out.println(network);
-            System.out.println(list_of_unknown_variables);
-            System.out.println(list_of_known_variables);
             double[] numerator = getNumerator(network, list_of_unknown_variables, list_of_unknown_variables);
 
 
-            Variable temp_var_for_query = network.findByName(queryDetails[0]);
-            List<String> all_outcomes_but_given = temp_var_for_query.getOutcomes();
-            //System.out.println("Qua options1: " + temp_var_for_query.outcomes);
-            //all_outcomes_but_given.remove(queryDetails[1]);
-            //network.findByName(queryDetails[0]).setOutcomes(all_outcomes_but_given);
-            //System.out.println("Qua options2: " + temp_var_for_query.outcomes);
+            Variable temp_var_for_query = network.find_variable_by_name(queryDetails[0]);
 
-            list_of_known_variables.remove(network.findByName(queryDetails[0]));
-            list_of_unknown_variables.add(network.findByName(queryDetails[0]));
+            list_of_known_variables.remove(network.find_variable_by_name(queryDetails[0]));
+            list_of_unknown_variables.add(network.find_variable_by_name(queryDetails[0]));
 
 
-            System.out.println("secondtime");
             double[] denominator = getNumerator(network, list_of_unknown_variables, list_of_unknown_variables);
 
             //double curr = numerator / (numerator + denominator);
             double curr = numerator[0] / denominator[0];
 
-
-//        DecimalFormat format = new DecimalFormat("#.#####");
-//        format.setRoundingMode(RoundingMode.HALF_EVEN);
-
-            System.out.println("p=" + printRoundedDouble(curr) + "," + (int) denominator[1] + "," + (int) denominator[2]);
             String toPrint = printRoundedDouble(curr) + "," + (int) denominator[1] + "," + (int) denominator[2];
             GlobalVars.outputFile.write(toPrint);
             GlobalVars.outputFile.newLine();
@@ -94,7 +70,6 @@ public class Algorithms {
     }
 
     public static double[] getNumerator(Network network, List<Variable> list_of_unknown_variables, List<Variable> list_of_known_variables) {
-        System.out.println("got in");
         double[] scores = new double[3];
         scores[0] = 0; //probability.
         scores[1] = 0; //total sums.
@@ -108,7 +83,7 @@ public class Algorithms {
             arr[i] = 0;
         }
 
-        //Creating a list of all the possible variations of the unknown variables.
+        // Creating a list of all the possible variations of the unknown variables.
         StringBuilder sb = new StringBuilder();
         generator(arr, dict, 0, sb);
         ArrayList<String> variations = new ArrayList<String>();
@@ -117,19 +92,14 @@ public class Algorithms {
         }
 
         int sumCounting = 0;
-        double sum = 0;
 
         for (String variation : variations) {
             sumCounting++;
             double[] current = fill_network_then_return_prob(network, list_of_unknown_variables, list_of_known_variables, variation);
             scores[1]++;
-            System.out.println("add to total " + current[0]);
             scores[0] += current[0];
-            System.out.println("and now the total is " + scores[0]);
             scores[2] += current[2];
         }
-
-        System.out.println("gg1");
 
         scores[1]--;
         return scores;
@@ -149,7 +119,6 @@ public class Algorithms {
 
         LinkedHashMap<String, String> evidences = network.getEvidences();
         int amount_to_add = list_of_unknown_variables.size();
-        //System.out.println("amount_to_add=" + amount_to_add);
 
         //Add the unknown variable, with their optional value, to the evidences' data.
         for (int i = 0; i < amount_to_add; i++) {
@@ -166,7 +135,6 @@ public class Algorithms {
         //First, Inserting the independent variables to checkedVariables.
         for (Variable variable : network.getVariables()) {
             if (variable.getGivens().size() == 0) {
-                System.out.print(variable.getProb(network.getEvidences().get(variable.getName()), network)+"*");
 
                 //I want to avoid the first multiply, so I'll assign scores[0] as the first variable,
                 //Instead of multiply it as 1*variable.
@@ -195,11 +163,8 @@ public class Algorithms {
                 for (Variable parent : variable.getGivens()) {
                     strToSend = strToSend + network.getEvidences().get(parent.getName());
                 }
-                //System.out.print(variable.getProb(strToSend, network)+"*");
-                //System.out.println("Var name: " + variable + ", outcome: " + strToSend + " which equals " + variable.getProb(strToSend, network));
-                //System.out.println("Var cpt:  " + variable.cpt);
+
                 multi *= variable.getProb(strToSend, network);
-                System.out.println("mmm: " + multi);
                 multiCount++;
 
                 scores[0] *= variable.getProb(strToSend, network);
@@ -207,11 +172,6 @@ public class Algorithms {
 
                 checkedVariables.add(variable);
             }
-
-            //System.out.println("nnn1 " + checkedVariables);
-            //System.out.println("nnn2 " + network.getVariables());
-
-            //System.out.println("gg2");
 
             if (index1 == network.getVariables().size()-1)
                 index1 = 0;
@@ -221,61 +181,19 @@ public class Algorithms {
         return scores;
     }
 
-
-    //-------------------
-
-    //The function get a network which contains full data of all variations.
-    //It returns the probability.
-    public static double given_fully_network_return_prob(Network network) {
-        double multi = 1;
-        int multiCount = 0;
-        List<Variable> checkedVariables = new ArrayList<Variable>();
-
-        //First, Inserting the independent variables.
-        for (Variable variable : network.variables) {
-            if (variable.givens.size() == 0) {
-                multi *= variable.getProb(network.evidences.get(variable.getName()), network);
-                multiCount++;
-                checkedVariables.add(variable);
-            }
-        }
-
-        //Now, Inserting, by while-loop, any variable that his parents was inserted.
-        //Till all variables are inserted.
-        int index = 0;
-        while (!checkedVariables.equals(network.getVariables())) {
-            Variable variable = network.getVariables().get(index);
-
-            //checks if variable's parent are found.
-            if (checkedVariables.containsAll(variable.getGivens()) && !checkedVariables.contains(variable)) {
-                String str = "";
-                for (Variable parent : variable.getGivens()) {
-                    str = str + network.getEvidences().get(parent.getName());
-                }
-                multi *= variable.getProb(str, network);
-                multiCount++;
-                checkedVariables.add(variable);
-            }
-
-            if (index == network.getVariables().size()-1)
-                index = 0;
-            else
-                index++;
-
-        }
-
-        System.out.println("Multi Count: " + multiCount);
-        return multi;
-    }
-
-    //Input = all the unknown variable of a network.
-    //Output = an array called dict[], when dict[i] represent the amount of optional outcomes for variable i.
+    // Returns an integer array of how many optional outcomes each unknown variable has.
     public static int[] getDict(List<Variable> list_of_unknown_variables) {
+
+        // Create a new integer array called "dict" with the same number of elements as the size of the list of variables
         int[] dict = new int[list_of_unknown_variables.size()];
 
+        // Iterate over each element in the "dict" array
         for (int i = 0; i < dict.length; i++) {
+
+            // Set the value of the current element in the "dict" array to the size of the list of outcomes for the corresponding variable in the "list_of_unknown_variables" list
             dict[i] = list_of_unknown_variables.get(i).outcomes.size();
         }
+        // Return the "dict" array
         return dict;
     }
 
@@ -358,25 +276,13 @@ public class Algorithms {
             }
         }
 
-//        System.out.println("Original f1 (" + f1.getName() + ") " + f1.containedList + " / " + f1.getCpt());
-//        System.out.println("Original f2 (" + f2.getName() + ") " + f2.containedList + " / " + f2.getCpt());
-//        System.out.println("Common vars: " + commonVariables);
-
-        LinkedHashMap<String, Double> originalCopyCpt1 = deepCopyLinkedHashMap(f1.getCpt()); //(LinkedHashMap<String, Double>) f1.getCpt().clone();
-        LinkedHashMap<String, Double> originalCopyCpt2 = deepCopyLinkedHashMap(f2.getCpt());
-
         // This function order f1 and f2 's keys and CPT such that the common vars are the most-left.
-        //System.outRprintln("REORDER CHECK <");
         f1.orderOutcomesByList(commonVariables);
         f2.orderOutcomesByList(commonVariables);
-        //System.out.println("REORDER CHECK >");
-
-//        System.out.println("now f1 (" + f1.getName() + ") " + f1.containedList + " / " + f1.getCpt());
-//        System.out.println("now f2 (" + f2.getName() + ") " + f2.containedList + " / " + f2.getCpt());
-
 
         ArrayList<Variable> restVariables;
         Factor chosenFactor;
+
         if (f1.getContainedList().size() < f2.getContainedList().size()) {
             restVariables = new ArrayList<Variable>(f1.getContainedList()); //(ArrayList<Variable>) f1.getContainedList().clone();
             chosenFactor = f1;
@@ -401,15 +307,9 @@ public class Algorithms {
                 lenOfCVinStr += variable.getOutcomes().get(0).length();
             }
 
-        System.out.println("check:");
-        System.out.println(f1.containedList);
-        System.out.println(f2.containedList);
-
-        //-zzz
 
         int i = 0;
         ArrayList<String > starters = new ArrayList<>();
-        //for (int i = 0; i < chosenFactor.cpt.size(); i += jumper) {
         while (starters.size() < (chosenFactor.cpt.size()/jumper)) {
             if (i > starters.size()) {
                 System.out.println("Problem: not enough commonkeys");
@@ -422,20 +322,7 @@ public class Algorithms {
             i++;
         }
 
-        System.out.println("Jumper is " + jumper);
-        System.out.println("known cpt: " + chosenFactor.getCpt());
-        for (String starter : starters) {
-            System.out.println(starter);
-        }
-
-        //-zzz
-
         for (String commonKey : starters) {
-//        for (int i = 0; i < chosenFactor.cpt.size(); i += jumper) {
-//            //for (int i = 0; i <= jumper; i++) {
-//            String commonKey = chosenFactor.getCpt().keySet().toArray()[i].toString().substring(0, lenOfCVinStr);
-            System.out.println(chosenFactor.getCpt());
-            //System.out.println(i + " j=" + jumper + " CK: " + commonKey + " cut " + chosenFactor.getCpt().keySet().toArray()[i].toString() + " in indexes 0-" + lenOfCVinStr + " to " + commonKey);
             /*
              * ASSUME THAT [A,B,C] AND [A,B,D,E] ARE ABOUT TO JOIN.
              * i've got all permutations of the common variables [A,B].
@@ -448,10 +335,7 @@ public class Algorithms {
 
             int commonVariableAmount = commonVariables.size();
 
-            //int multiSlice = 1;
-            //for (Variable variable : commonVariables) {
-            //multiSlice *= variable.getOutcomes().size();
-            //} //Ex: Slicing {TTT=0.3, TTF=0.7, TFT=0.45, TFF=0.55, FTT=0.6, FTF=0.4, FFT=0.15, FFF=0.85}
+            //Ex: Slicing {TTT=0.3, TTF=0.7, TFT=0.45, TFF=0.55, FTT=0.6, FTF=0.4, FFT=0.15, FFF=0.85}
             //By multiSlice=4 will give {TTT=0.3, TTF=0.7, TFT=0.45, TFF=0.55}
             //By "TTT".substring(commonVariableAmount) -> TT.
 
@@ -469,7 +353,6 @@ public class Algorithms {
                     for (Variable com : commonVariables) {
                         slice += com.outcomes.get(0).length() - 1;
                     }
-//                        System.out.println(commonVariableAmount + " slice is " + slice);
 
                     String key1 = "", key2 = "";
                     String key1cpt = "", key2cpt = "";
@@ -486,28 +369,12 @@ public class Algorithms {
                         key2cpt = f1.getCpt().keySet().toArray()[k].toString();
                     }
 
-//                        System.out.println("Commonkey " + commonKey);
-//                        System.out.println("key1: " + key1 + " key1cpt: " + key1cpt);
-//                        System.out.println("key2: " + key2 + " key1cpt: " + key2cpt);
-
-//                        System.out.println(f1.getCpt().get(commonKey + key1));
-//                        System.out.println(f2.getCpt().get(commonKey + key2));
-
-
-//                        System.out.println("Let's combine1: " + f1);
-//                        System.out.println("Let's combine2: " + f2);
-
-//                        System.out.println("Final1: " + (commonKey + key1));
-//                        System.out.println("Final2: " + (commonKey + key2));
-
 
                     double value1 = f1.getCpt().get(commonKey + key1);
                     double value2 = f2.getCpt().get(commonKey + key2);
 
-                    //System.out.println("Put: <key=" + (commonKey + key1 + key2) + ">, value=" + (value1*value2));
                     if (!new_factor.getCpt().containsKey((commonKey + key1 + key2))) {
-                        new_factor.cpt.put((commonKey + key1 + key2), value1 * value2); // I shall sum that^^
-                        System.out.println("Multi: " + value1 + " * " + value2);
+                        new_factor.cpt.put((commonKey + key1 + key2), value1 * value2);
                         GlobalVars.setGlobalMulti(GlobalVars.getGlobalMulti() + 1);
                     }
                 }
@@ -529,10 +396,10 @@ public class Algorithms {
         }
 
         new_factor.containedList = newOrder;
-        //System.out.println("New ORDER: " + newOrder);
         return new_factor;
     }
 
+    // Define a method called "deepCopyLinkedHashMap" that takes in a linked hash map called "original" and returns a linked hash map
     public static LinkedHashMap<String, Double> deepCopyLinkedHashMap(LinkedHashMap<String, Double> original) {
         LinkedHashMap<String, Double> copy = new LinkedHashMap<>();
         for (Map.Entry<String, Double> entry : original.entrySet()) {
@@ -570,28 +437,12 @@ public class Algorithms {
         }
     }
 
-    public static void sortLHM(LinkedHashMap<String, Double> originalBackUp, LinkedHashMap<String, Double> newCpt) {
-        LinkedHashMap<String, Double> sortedCpt = new LinkedHashMap<>();
-        for (Map.Entry<String, Double> entry : originalBackUp.entrySet()) {
-            String key = entry.getKey();
-            if (newCpt.containsKey(key)) {
-                Double value = newCpt.get(key);
-                sortedCpt.put(key, value);
-            }
-        }
-        newCpt.clear();
-        newCpt.putAll(sortedCpt);
-    }
-
-
-
+    //Algo 2 and 3.
     public static void conclusionByVE(Network network, String[] queryDetails, char chosenAlgo) throws IOException {
-        System.out.println("GOT HERE, algo2");
 
         ArrayList<Variable> list_of_unknown_variables = new ArrayList<Variable>();
         ArrayList<Variable> list_of_known_variables = new ArrayList<Variable>();
 
-        System.out.println("Eviddd " + network.getEvidences());
 
         for (Variable variable : network.getVariables()) {
             String valueByKey = network.getEvidences().get(variable.getName());
@@ -600,7 +451,6 @@ public class Algorithms {
                 list_of_known_variables.add(variable);
             }
             if (variable.getName().equals(queryDetails[0])) {
-                //list_of_known_variables.add(variable);
                 network.getEvidences().put(queryDetails[0], queryDetails[1]);
             }
 
@@ -623,16 +473,9 @@ public class Algorithms {
 
         ArrayList<Variable> list_of_vars_tobe_eliminated = new ArrayList<>(list_of_unknown_variables);
 
-        System.out.println("Eliminate every hidden which isn't a ancestor of query/evidence");
-        System.out.println("All hidden: " + list_of_unknown_variables);
-        eliminateHiddenVariables(list_of_vars_tobe_eliminated, list_of_known_variables, network.findByName(queryDetails[0]));
-        System.out.println("The vars that should be eliminated: " + list_of_vars_tobe_eliminated);
+        eliminateHiddenVariables(list_of_vars_tobe_eliminated, list_of_known_variables, network.find_variable_by_name(queryDetails[0]));
         list_of_unknown_variables = list_of_vars_tobe_eliminated;
-        System.out.println("Now we have: " + list_of_unknown_variables);
-        System.out.println("Query: " + queryDetails[0]);
-        //----
 
-        System.out.println("Known list: " + list_of_known_variables);
         ArrayList<Factor> factors = new ArrayList<Factor>();
         int index = 1;
 
@@ -648,67 +491,28 @@ public class Algorithms {
         }
 
 
-
-        System.out.println("Factors before rest: " + factors.size());
-        for (Factor factor : factors) {
-            System.out.println(factor.toString() + " // cpt.size: " + factor.getCpt().size());
-            //System.out.println(factor.containedList);
-        }
-
         // For each factor, set factor.containsList to be its parents + the Var it is based on.
         // That way we can work well with that list.
 
         for (Factor factor : factors) {
             Variable basedVar = factor.containedList.get(factor.containedList.size() - 1);
-            //System.out.println(basedVar.getName() + " yyyy");
             factor.containedList = (ArrayList<Variable>) factor.getGivens();
             factor.containedList.add(basedVar);
         }
 
-//        ArrayList<Variable> temp_holder_for_variables = new ArrayList<Variable>();
-//        // Eliminate every variable that isn't evidence or query, or their parent (including ancestor).
-//        // Get a list of the variables that weren't eliminated.
-//        for (Variable variable : network.getVariables()) {
-//            if (variable.is_son(list_of_known_variables) || list_of_known_variables.contains(variable)) {
-//                temp_holder_for_variables.add(variable);
-//            }
-//        }
-//
-//        Make a factor for each variable in out network.
-//        Factor will be based on Variable class.
-//        int index = 1;
-//        ArrayList<Factor> factors = new ArrayList<Factor>();
-//        for (Variable variable : temp_holder_for_variables) {
-//            Factor factor = new Factor(variable, ("Factor" + index));
-//            factors.add(factor);
-//            index++;
-//        }
-//
-//        System.out.println("DB: Unknown variables: " + list_of_unknown_variables);
-//        System.out.println("DB: known variables:   " + list_of_known_variables);
-//
-//        System.out.println("DB: Evidence is: " + network.getEvidences());
 
         LinkedHashMap<String, String> evidences = network.getEvidences();
         ArrayList<Factor> temp_holder_factors = new ArrayList<Factor>(factors);
-        ArrayList<Factor> advancedList = new ArrayList<Factor>();
-
-        System.out.println("LIST OF KNOWN: " + list_of_known_variables);
-
 
         list_of_known_variables = orderByASCII(list_of_known_variables);
-        System.out.println("and now:       " + list_of_known_variables);
 
         int iterations = factors.size();
 
-
         for (int i = 0; i < iterations; i++) {
             Factor factor = factors.get(i);
-            //System.out.println("This index = " + i + " and factors.size = " + factors.size());
 
             for (Variable known_var : list_of_known_variables) {
 
-                //System.out.println("CHECK " + factor.name + ": " + factor.containedList + " / " + known_var);
                 boolean is_contained_by_name = false;
 
                 for (int j = 0; j < factor.getContainedList().size(); j++) {
@@ -721,7 +525,6 @@ public class Algorithms {
                     }
                 }
 
-                System.out.println(is_contained_by_name);
 
                 // Check if "factor" contains "known_var"
                 if (factor.getContainedList().contains(known_var) || is_contained_by_name) {
@@ -740,13 +543,8 @@ public class Algorithms {
                         newCpt = factor.clear_ir_char_key(known_var, outcome, newCpt);
                     }
 
-                    //System.out.print(factor.name + ": " + new_factor.containedList + " becomes-> ");
                     new_factor.containedList.remove(known_var); // "new_factor" won't contain "known_var" anymore.
-                    //System.out.println(new_factor.containedList + " (" + known_var.getName() + "=" + outcome + ")");
-                    //System.out.print(new_factor.cpt + " -> ");
                     new_factor.setCpt(newCpt);
-                    //System.out.println(new_factor.cpt);
-
 
                     // Adding "new_factor" to the list and remove "factor".
                     temp_holder_factors.remove(factor);
@@ -757,128 +555,69 @@ public class Algorithms {
 
 
             }
-            //System.out.println(factor.getName() + ": " + factor.cpt);
             factors = temp_holder_factors;
         }
 
         ArrayList<Factor> cloneList = new ArrayList<>(temp_holder_factors);
 
         for (Factor factor : cloneList) {
-            if (factor.getCpt().size()==1) {
+            if (factor.getCpt().size() == 1) {
                 temp_holder_factors.remove(factor);
             }
         }
 
-        System.out.println("Factors after restrict: " + temp_holder_factors.size());
-        for (Factor factor : temp_holder_factors) {
-            System.out.println(factor.toString() + " / Cpt.size = " + factor.getCpt().size() + " / " + factor.getGivens());
-        }
-
         ArrayList<Variable> hiddenVariableList = new ArrayList<>(list_of_unknown_variables);
-
 
         // >end any elimination of hidden variables which are not ancestor of query or evidences.
 
-        System.out.println("Keep going");
-        System.out.println("List of unknown: " + list_of_unknown_variables);
-
-        if (chosenAlgo == '2') {
-            System.out.println("order by abc");
+        if (chosenAlgo == '2') { //Algo 2's method
             list_of_unknown_variables = orderByASCII(list_of_unknown_variables);
         }
-        if (chosenAlgo == '3') {
-            System.out.println("order by heuristic");
+        if (chosenAlgo == '3') { //Algo 3's method
             orderByAppearance(list_of_unknown_variables, temp_holder_factors);
         }
-        System.out.println("List of unknown: " + list_of_unknown_variables);
 
         ArrayList<Factor> factor_list_to_combine = new ArrayList<Factor>();
-        ArrayList<String> factor_list_to_combine_names = new ArrayList<String>(); //useless
         ArrayList<Factor> holder_for_factors = new ArrayList<>(factors);
 
         // ### Join section
         for (Variable hidden_variable : list_of_unknown_variables) {
 
             factor_list_to_combine.clear();
-            factor_list_to_combine_names.clear();
 
             for (int i = 0; i < holder_for_factors.size(); i++) {
                 Factor factor = holder_for_factors.get(i);
-                System.out.println(factor.getName() + ": " + factor.getContainedList());
-
 
                 // For each var in a factor - if it's equaled to "hidden_variable" then add it to "list_to_combine".
                 // List to combine will use for joining factors later.
                 for (Variable varInFactor : factor.getContainedList()) {
                     if (varInFactor.getName().equals(hidden_variable.getName())) {
-//                        System.out.println(varInFactor.getName() + "=" + hidden_variable.getName());
                         factor_list_to_combine.add(factor);
-                        factor_list_to_combine_names.add(factor.getName());
                         break;
                     }
                 }
             }
 
-            System.out.println("Working with " + hidden_variable.getName() + " has " + factor_list_to_combine.size() + " factors to combine");
             // If there is only 1 factor in list to combine, it'll will remain the same.
             //  If there is 0, it's irrelevant.
             if (factor_list_to_combine.size() > 1) {
 
-                //System.out.println("THIS ELSE ");
-                //System.out.println("dv: " + factor_list_to_combine_names + " total " + factor_list_to_combine.size());
-                //System.out.println("dv: " + factor_list_to_combine);
-
                 // Let's run on any 2 adjacent factors in "list_to_combine".\
                 Factor f1 = null;
                 Factor f2 = null;
-                //for (int i = 0; i < factor_list_to_combine.size() ; i++) {
+
                 while (factor_list_to_combine.size() != 1) {
 
-                    System.out.println("Not order: ");
-                    for (Factor factor : factor_list_to_combine) {
-                        System.out.println(factor.getName() + ": " + factor.cpt + " , total " + factor.cpt.size());
-                    }
                     factor_list_to_combine = orderByCptSize(factor_list_to_combine);
-                    System.out.println("Order: ");
-                    for (Factor factor : factor_list_to_combine) {
-                        System.out.println(factor.getName() + ": " + factor.cpt + " , total " + factor.cpt.size());
-                    }
 
-                    // Declare on those 2 adjacent factors.
+                    // Declare on those 2 most-left adjacent factors.
                     f1 = factor_list_to_combine.get(0);
                     f2 = factor_list_to_combine.get(1);
 
                     Factor new_factor = new Factor(holder_for_factors);
 
-                    System.out.println("Let's combine1: " + f1.cpt.size() + ": " + f1);
-                    System.out.println("Let's combine1: " + f2.cpt.size() + ": " + f2);
-                    System.out.println("total mulites supposed to be " + f1.cpt.size());
-
-                    System.out.println("hhh1.0 " + new_factor);
                     new_factor = join(f1, f2, new_factor);
 
-                    int index_of_hidden_inCL = new_factor.containedList.indexOf(hidden_variable.getName());
-//                    System.out.println(hidden_variable + " is in place " + index_of_hidden_inCL);
-
-
-                    //****
-                    // For case when CL=[... , B, B, ...] when B=hidden_variable. Now check from left and from right.
-//                    if (new_factor.getContainedList().size() > index_of_hidden_inCL + 1) {
-//                        if (new_factor.getContainedList().get(index_of_hidden_inCL + 1).getName().equals(hidden_variable.getName())) {
-//                            System.out.println("bett1");
-//                            new_factor.marginalization(index_of_hidden_inCL); // updates cpt
-//                            new_factor.containedList.remove(hidden_variable);
-//                        }
-//                    }
-//                        if (index_of_hidden_inCL > 0 && new_factor.getContainedList().get(index_of_hidden_inCL-1).getName().equals(hidden_variable.getName())) {
-//                            System.out.println("bett2");
-//                            new_factor.marginalization(index_of_hidden_inCL); // updates cpt
-//                            new_factor.containedList.remove(hidden_variable);
-//                        }
-
-
-                    System.out.println("hhh1.1 " + new_factor + " after " + hidden_variable);
-                    System.out.println("Now remove " + f1.getName() + ", " + f2.getName());
 
                     holder_for_factors.add(new_factor);
                     holder_for_factors.remove(f1);
@@ -886,11 +625,8 @@ public class Algorithms {
                     factor_list_to_combine.remove(f1);
                     factor_list_to_combine.remove(f2);
                     factor_list_to_combine.add(new_factor);
-                    //i--;
-                    System.out.println("will " + factor_list_to_combine.size() + ">" + 1 + " ?");
                 }
 
-                //...
             }
 
             // Now out list is sure to contain only one factor that contains "hidden_variable".
@@ -901,23 +637,16 @@ public class Algorithms {
                 new_factor.eliminateVarFromFactor(hidden_variable);
                 holder_for_factors.add(new_factor);
                 holder_for_factors.remove(factor_list_to_combine.get(0));
-            }
-            else {
+            } else {
                 System.out.println("Error: There are more than one factor in factor_list_to_combine, so it didn't eliminate " + hidden_variable);
             }
         }
-
-//        System.out.println("FACTOR HOLDER");
-//        for (Factor factor : holder_for_factors) {
-//            System.out.println(factor);
-//        }
 
         Factor temp;
         while (holder_for_factors.size() > 1) {
             holder_for_factors = orderByCptSize(holder_for_factors); // Make sure that the little factors will be joined first.
             temp = new Factor(holder_for_factors);
             temp = join(holder_for_factors.get(0), holder_for_factors.get(1), temp);
-            System.out.println(temp);
             holder_for_factors.remove(holder_for_factors.get(0));
             holder_for_factors.remove(holder_for_factors.get(0));
             holder_for_factors.add(temp);
@@ -926,16 +655,9 @@ public class Algorithms {
         Factor final_factor = holder_for_factors.get(0);
 
         // Avoiding normalize a factor that its cpt values are equal already to 1.
-        //if (holder_for_factors.get(0).getCpt().values().stream().mapToDouble(Double::doubleValue).sum() != 1) {
-            final_factor = new Factor(holder_for_factors.get(0), holder_for_factors);
-            final_factor.normalize();
-        //}
+        final_factor = new Factor(holder_for_factors.get(0), holder_for_factors);
+        final_factor.normalize();
 
-        System.out.println("FACTOR HOLDER - normalized");
-        System.out.println(final_factor);
-
-        //System.out.println("LastFactor? " + holder_for_factors.get(0));
-        System.out.println("2.p=" + printRoundedDouble(final_factor.getCpt().get(queryDetails[1])) + "," + GlobalVars.getGlobalSum() + "," + GlobalVars.getGlobalMulti());
         GlobalVars.outputFile.write((printRoundedDouble(final_factor.getCpt().get(queryDetails[1])) + "," + GlobalVars.getGlobalSum() + "," + GlobalVars.getGlobalMulti()).trim());
         GlobalVars.outputFile.newLine();
     }

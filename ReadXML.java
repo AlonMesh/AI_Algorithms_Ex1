@@ -53,17 +53,14 @@ public class ReadXML {
                 //for each founded parent, add it to temp (also find() in network?)
                 for (int j = 0; j < givenCount; j++) {
                     String nameToFind = e_temp_node_of_defs.getElementsByTagName("GIVEN").item(j).getTextContent();
-                    //System.out.println("NAME=" + name + " , THE NAME OF PARENT TO FIND IS :" + nameToFind);
-                    if (!network.variables.contains(network.findByName(nameToFind))) {
-                        //System.out.println("WHAT MAKES IT FALSE: " + nameToFind);
+                    if (!network.variables.contains(network.find_variable_by_name(nameToFind))) {
                         all_parents_already_inserted = false;
                     }
                 }
             }
 
             if (node_of_names.getNodeType() == Node.ELEMENT_NODE && node_of_defs.getNodeType() == Node.ELEMENT_NODE &&
-                     all_parents_already_inserted && !network.variables.contains(network.findByName(name))) {
-                //System.out.println("i will be " + index);
+                     all_parents_already_inserted && !network.variables.contains(network.find_variable_by_name(name))) {
                 Element e_node_of_names = (Element) node_of_names;
                 Element e_node_of_defs = (Element) node_of_defs;
 
@@ -108,8 +105,7 @@ public class ReadXML {
                     //for each founded parent, add it to temp (also find() in network?)
                     for (int j = 0; j < givenCount; j++) {
                         String nameToFind = e_node_of_defs.getElementsByTagName("GIVEN").item(j).getTextContent();
-                        //System.out.println("\nTHE NAME IS :" + nameToFind);
-                        Variable variable = network.findByName(nameToFind);
+                        Variable variable = network.find_variable_by_name(nameToFind);
                         temp.add(variable);
                     }
                 }
@@ -123,7 +119,6 @@ public class ReadXML {
             else
                 index++;
         }
-        System.out.println(network.variables.toString());
     }
 
 }

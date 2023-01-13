@@ -32,7 +32,7 @@ public class ReadTXT {
         queryDetails[1] = line.substring(line.indexOf("=")+1, line.indexOf("|")); //The query's given outcome.
 
         int minOcLen = 999;
-        for (String outcome : network.findByName(queryDetails[0]).getOutcomes()) {
+        for (String outcome : network.find_variable_by_name(queryDetails[0]).getOutcomes()) {
             minOcLen = Math.min(minOcLen, outcome.length());
         }
 
@@ -42,7 +42,6 @@ public class ReadTXT {
     }
 
     public static String getEvidenceLine(String line) {
-        //System.out.println("line := " + line);
         return line.substring(line.indexOf('|')+1, line.indexOf(')'));
     }
 
@@ -57,19 +56,16 @@ public class ReadTXT {
 
         //Give the given variables their outcome.
         for (String info : tempArr) {
-            System.out.println("q: " + info);
             String variableName = info.substring(0, info.indexOf('='));
 
             int minOcLen = 999;
-            for (String outcome : network.findByName(variableName).getOutcomes()) {
+            for (String outcome : network.find_variable_by_name(variableName).getOutcomes()) {
                 minOcLen = Math.min(minOcLen, outcome.length());
             }
 
             String variableData = info.substring(info.indexOf('=')+1).substring(0,minOcLen);
-            System.out.println("q: name: " + variableName + ", data: " + variableData);
             evidences.replace(variableName, "%%%", variableData);
         }
-        System.out.println(evidences);
 
         //The reason I used LinkedHashMap is cuz it save the INSERTION ORDER (unlike HaspMap).
         //HashMap<String, String> evidences2 = (HashMap<String, String>) evidences;
