@@ -32,8 +32,4 @@ This implementation of Bayesian Network using Variable Elimination algorithm can
 
 The project includes the implementation of each algorithm and the calculation of both the probability and the number of additions and multiplications required for each algorithm.
 
-![image](https://user-images.githubusercontent.com/97172662/212310597-e1b13974-4bc9-45f9-86b4-3be015a58b50.png)
-![image](https://user-images.githubusercontent.com/97172662/212310659-6e76f9ca-f3c4-4b77-a84a-efa5c0ec380c.png)
-![image](https://user-images.githubusercontent.com/97172662/212310779-3ece6ecf-55a4-48b9-b880-4fcf2402c62e.png)
-
-
+![image](https://user-images.githubusercontent.com/97172662/212310971-c9cde4f4-c974-4ecd-a06a-c571f582f25e.png)
