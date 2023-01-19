@@ -1,7 +1,8 @@
-# AI Algorithms Ex1
+# Variable_Elimination_Algorithm
 
 ## Overview
 This project is a Bayesian Network implementation that uses Variable Elimination (VE) algorithm to perform probabilistic inference. The network and the queries are read from an XML file and an input file respectively.
+This project was made as exhbit of the course "AI algorithms".
 
 ## How to Run
 
