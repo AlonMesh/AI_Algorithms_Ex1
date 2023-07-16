@@ -13,15 +13,12 @@ import java.util.List;
 
 public class ReadXML {
 
-    public static void creating_network_and_set_lists_for_each_variable(String path, Network network, List<String> outcomesList, List<String> givensList, List<Double> valuesList)
+    public static void creating_network_and_set_lists_for_each_variable(String path, Network network)
             throws ParserConfigurationException, IOException, SAXException {
-
-
-        //File file = new File(path.toString()); // DOESN'T WORK SOME WHY
         File file = new File(path.trim());
-        //an instance of factory that gives a document builder
+        // An instance of factory that gives a document builder
         DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-        //an instance of builder to parse the specified xml file
+        // an instance of builder to parse the specified xml file
         DocumentBuilder db = dbf.newDocumentBuilder();
         Document doc = db.parse(file);
 
@@ -53,23 +50,22 @@ public class ReadXML {
                 //for each founded parent, add it to temp (also find() in network?)
                 for (int j = 0; j < givenCount; j++) {
                     String nameToFind = e_temp_node_of_defs.getElementsByTagName("GIVEN").item(j).getTextContent();
-                    if (!network.variables.contains(network.find_variable_by_name(nameToFind))) {
+                    if (!network.getVariables().contains(network.find_variable_by_name(nameToFind))) {
                         all_parents_already_inserted = false;
                     }
                 }
             }
 
             if (node_of_names.getNodeType() == Node.ELEMENT_NODE && node_of_defs.getNodeType() == Node.ELEMENT_NODE &&
-                     all_parents_already_inserted && !network.variables.contains(network.find_variable_by_name(name))) {
+                     all_parents_already_inserted && !network.getVariables().contains(network.find_variable_by_name(name))) {
                 Element e_node_of_names = (Element) node_of_names;
                 Element e_node_of_defs = (Element) node_of_defs;
 
-                String values = e_node_of_defs.getElementsByTagName("TABLE").item(0).getTextContent();
                 String[] valuesArr = e_node_of_defs.getElementsByTagName("TABLE").item(0).getTextContent().split(" ");
 
-                valuesList = new ArrayList<Double>();
-                outcomesList = new ArrayList<String>();
-                givensList = new ArrayList<String>();
+                List<Double> valuesList = new ArrayList<>();
+                List<String> outcomesList = new ArrayList<>();
+                List<String> givensList = new ArrayList<>();
 
                 if (e_node_of_defs.getElementsByTagName("GIVEN").getLength() == 0)
                     for (int j = 0; j < valuesArr.length; j++) {
@@ -99,7 +95,7 @@ public class ReadXML {
                 }
 
                 name = e_node_of_names.getElementsByTagName("NAME").item(0).getTextContent();
-                List<Variable> temp = new ArrayList<Variable>();
+                List<Variable> temp = new ArrayList<>();
 
                 if (givenCount != 0) {
                     //for each founded parent, add it to temp (also find() in network?)

@@ -38,7 +38,7 @@ public class Factor extends Variable {
         this.name = name;
         this.containedList = new ArrayList<Variable>();
 
-        for (Variable parent : variable.givens)
+        for (Variable parent : variable.getGivens())
             this.containedList.add(new Variable(parent));
 
         this.containedList.add(new Variable(variable));
@@ -55,15 +55,15 @@ public class Factor extends Variable {
         LinkedHashMap<String, Double> newCpt = new LinkedHashMap<String, Double>();
 
         int irrelevant_variable_index = this.containedList.indexOf(irrelevant_variable);
-        for (String oldKey : this.cpt.keySet()) {
+        for (String oldKey : this.getCpt().keySet()) {
             String newkey = oldKey.substring(0, irrelevant_variable_index) + oldKey.substring(irrelevant_variable_index+1);
 
             if (newCpt.containsKey(newkey)) {
-                newCpt.put(newkey, (newCpt.get(newkey)+this.cpt.get(oldKey)));
+                newCpt.put(newkey, (newCpt.get(newkey)+this.getCpt().get(oldKey)));
             }
 
             else {
-                newCpt.put(newkey, this.cpt.get(oldKey));
+                newCpt.put(newkey, this.getCpt().get(oldKey));
             }
         }
         return newCpt;
@@ -87,8 +87,8 @@ public class Factor extends Variable {
             // It means that this.factor is based on known_var. therefor it holds the last char.
             if (index_of_given_parent == -1) {
                 // Find the index of outcome the chosen parent.
-                for (int i = 0; i < known_var.outcomes.size(); i++) {
-                    if (chosenOutcome.equals(known_var.outcomes.get(i)))
+                for (int i = 0; i < known_var.getOutcomes().size(); i++) {
+                    if (chosenOutcome.equals(known_var.getOutcomes().get(i)))
                         index_of_given_outcome = i;
                 }
 
@@ -97,7 +97,7 @@ public class Factor extends Variable {
 
                 else {
                     LinkedHashMap<String, Double> tempLHM = Algorithms.deepCopyLinkedHashMap(lhm);
-                    int amount_of_outcomes = known_var.outcomes.size();
+                    int amount_of_outcomes = known_var.getOutcomes().size();
                     //Remove any line that doesn't equal to the given outcome.
                     for (int i = 0; i < lhm.size(); i++) {
                         if (i % amount_of_outcomes != index_of_given_outcome) {
@@ -117,7 +117,7 @@ public class Factor extends Variable {
                         index_of_given_parent += i;
                         break;
                     }
-                    index_of_given_parent += this.containedList.get(i).outcomes.get(0).length() - 1; //If A=T then +1-1=0, but if A=v1 then +2-1=+1
+                    index_of_given_parent += this.containedList.get(i).getOutcomes().get(0).length() - 1; //If A=T then +1-1=0, but if A=v1 then +2-1=+1
                 }
 
                 if (index_of_given_parent == -1)

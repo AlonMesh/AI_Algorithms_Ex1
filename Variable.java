@@ -2,11 +2,11 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class Variable {
-    public String name;
-    public List<String> outcomes; //The options for each variable
-    public List<Double> values; //Values of each outcome (and even more)
-    public List<Variable> givens; //If variable MUTNA in another variables, list them. //add()
-    public LinkedHashMap<String, Double> cpt;
+    protected String name;
+    private List<String> outcomes; // The options for each variable
+    private List<Double> values; // Values of each outcome (and even more)
+    private List<Variable> givens; // If variable depends on another variables, list them. //add()
+    protected LinkedHashMap<String, Double> cpt;
 
     public Variable() {
         String name = "";
@@ -195,7 +195,7 @@ public class Variable {
         str = "";
 
         for (Variable variable : this.givens) {
-            str = str + network.evidences.get(variable.getName());
+            str = str + network.getEvidences().get(variable.getName());
         }
 
 

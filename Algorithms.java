@@ -105,11 +105,10 @@ public class Algorithms {
         return scores;
     }
 
-    /*This function get the known data so far, including a String that
+    /** This function get the known data so far, including a String that
     contains all the optional outcomes variations for the unknown variables.
     Then, it "fills" the unknown variables with the current outcomes (given by the String)
-    and sent it to another function that calculate the probability.
-     */
+    and sent it to another function that calculate the probability. */
     public static double[] fill_network_then_return_prob(Network network, List<Variable> list_of_known_variables,
                                                        List<Variable> list_of_unknown_variables, String str) {
         double[] scores = new double[3];
@@ -151,8 +150,8 @@ public class Algorithms {
             }
         }
 
-        //Now, Inserting, by while-loop, any variable that his parents was inserted.
-        //Till all variables are inserted.
+        // Now, Inserting, by while-loop, any variable that his parents was inserted.
+        // Till all variables are inserted.
         int index1 = 0;
         while (!checkedVariables.containsAll(network.getVariables())) {
             Variable variable = network.getVariables().get(index1);
@@ -191,15 +190,15 @@ public class Algorithms {
         for (int i = 0; i < dict.length; i++) {
 
             // Set the value of the current element in the "dict" array to the size of the list of outcomes for the corresponding variable in the "list_of_unknown_variables" list
-            dict[i] = list_of_unknown_variables.get(i).outcomes.size();
+            dict[i] = list_of_unknown_variables.get(i).getOutcomes().size();
         }
         // Return the "dict" array
         return dict;
     }
 
-    //Input = Zero's array, dict array (explain: getDict function).
-    //Output = A StringBuilder that hold all the optional variations outcomes for n variables.
-    //for example, when 2 variables has 2 optional outcomes: String builder = "00"+"01"+"10"+"11".
+    // Input = Zero's array, dict array (explain: getDict function).
+    // Output = A StringBuilder that hold all the optional variations outcomes for n variables.
+    // for example, when 2 variables has 2 optional outcomes: String builder = "00"+"01"+"10"+"11".
     public static StringBuilder generator(int[] arr, int[] dict, int index, StringBuilder sb) {
         int digits = arr.length;
         String str = "";
@@ -228,10 +227,10 @@ public class Algorithms {
         // Use a TreeMap to sort the factors by their cpt size
         TreeMap<Integer, List<Factor>> map = new TreeMap<>();
         for (Factor factor : factors) {
-            if (!map.containsKey(factor.cpt.size())) {
-                map.put(factor.cpt.size(), new ArrayList<>());
+            if (!map.containsKey(factor.getCpt().size())) {
+                map.put(factor.getCpt().size(), new ArrayList<>());
             }
-            map.get(factor.cpt.size()).add(factor);
+            map.get(factor.getCpt().size()).add(factor);
         }
 
         // Add the sorted factors to the ArrayList
@@ -265,7 +264,7 @@ public class Algorithms {
     }
 
     public static Factor join(Factor f1, Factor f2, Factor new_factor) {
-        new_factor.cpt = new LinkedHashMap<String, Double>();
+        new_factor.cpt = new LinkedHashMap<>();
         // Find all the commonVariables
         List<Variable> commonVariables = new ArrayList<>();
         for (Variable var1 : f1.getContainedList()) {
@@ -310,7 +309,7 @@ public class Algorithms {
 
         int i = 0;
         ArrayList<String > starters = new ArrayList<>();
-        while (starters.size() < (chosenFactor.cpt.size()/jumper)) {
+        while (starters.size() < (chosenFactor.getCpt().size()/jumper)) {
             if (i > starters.size()) {
                 System.out.println("Problem: not enough commonkeys");
             }
@@ -351,7 +350,7 @@ public class Algorithms {
                     int slice = commonVariableAmount;
 
                     for (Variable com : commonVariables) {
-                        slice += com.outcomes.get(0).length() - 1;
+                        slice += com.getOutcomes().get(0).length() - 1;
                     }
 
                     String key1 = "", key2 = "";
@@ -374,7 +373,7 @@ public class Algorithms {
                     double value2 = f2.getCpt().get(commonKey + key2);
 
                     if (!new_factor.getCpt().containsKey((commonKey + key1 + key2))) {
-                        new_factor.cpt.put((commonKey + key1 + key2), value1 * value2);
+                        new_factor.getCpt().put((commonKey + key1 + key2), value1 * value2);
                         GlobalVars.setGlobalMulti(GlobalVars.getGlobalMulti() + 1);
                     }
                 }

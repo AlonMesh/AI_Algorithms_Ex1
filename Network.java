@@ -1,12 +1,30 @@
+import org.xml.sax.SAXException;
+
+import javax.xml.parsers.ParserConfigurationException;
+import java.io.IOException;
 import java.util.*;
 
 public class Network {
-    public List<Variable> variables; //All variables in our network
-    public LinkedHashMap<String, String> evidences;
+    private List<Variable> variables; // All variables in our network
+    private LinkedHashMap<String, String> evidences;
 
     public Network() {
         this.variables = new ArrayList<Variable>();
         this.evidences = new LinkedHashMap<String, String>();
+    }
+
+    public static Network createNetworkByXMLpath(String xmlPath) {
+        Network network = new Network();
+        try {
+            ReadXML.creating_network_and_set_lists_for_each_variable(xmlPath, network);
+        } catch (ParserConfigurationException e) {
+            throw new RuntimeException(e);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        } catch (SAXException e) {
+            throw new RuntimeException(e);
+        }
+        return network;
     }
 
     public void addVariable(Variable variable) {
@@ -40,14 +58,9 @@ public class Network {
         List<String> names = new ArrayList<>(this.variables.size());
 
         for (int i = 0; i < this.variables.size(); i++) {
-            names.add(this.variables.get(i).name);
+            names.add(this.variables.get(i).getName());
         }
         return names;
-    }
-
-
-    public void setVariables(List<Variable> variables) {
-        this.variables = variables;
     }
 
     public void print() {
