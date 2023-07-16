@@ -56,7 +56,7 @@ In this format:
 Make sure to include all the algorithms (1, 2, and 3) for each query.
 
 ### XML File
-Create an XML file named `net.xml` to represent the Bayesian network. The XML structure should follow the format below:
+Create an XML file named to represent the Bayesian network. It is recommanded to use one of the xml files in the folder. However, if you want to make your network, The XML structure should follow the format below:
 
 ```xml
 <network>
@@ -91,7 +91,6 @@ Create an XML file named `net.xml` to represent the Bayesian network. The XML st
 </network>
 ```
 
-Make sure to replace <VARIABLE_NAME> and <OUTCOME> with appropriate names and outcomes, and define <DEFINITION> with conditional probability values for variables with parents.
 ## File Structure
 The project consists of several java classes including:
 
