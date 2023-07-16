@@ -6,12 +6,92 @@ This project was made as exhbit of the course "AI algorithms".
 
 ## How to Run
 
-Download the project files and navigate to the project directory in the command line.
-Make sure you have the necessary libraries installed: javax.xml.parsers, org.w3c.dom, org.xml.sax and java.io.
-Compile the project by running the command javac \*.java
-Run the program by running the command java Main
-The program will read the input file and the XML file in the same directory, and write the results to an output file also in the same directory.
+## How to Run
 
+1. Download the project files and navigate to the project directory in the command line. Make sure you have the necessary libraries installed:
+   - javax.xml.parsers
+   - org.w3c.dom
+   - org.xml.sax
+   - java.io
+
+2. Compile the project by running the command:
+`javac *.java`
+
+3. Run the program by executing the command:
+`java Main`
+
+The program will read the input file and the XML file from the same directory and write the results to an `output.txt` file, also located in the same directory.
+
+### Input File (input.txt)
+
+Format for the `input.txt` file:
+
+```
+<name_of_xml_file>
+<query1>,<algorithm_choice>
+<query2>,<algorithm_choice>
+...
+```
+
+**Example:**
+```
+net.xml
+P(X=1|Y=2,Z=0),1
+P(A=0|B=1),2
+```
+
+In this format:
+- `<name_of_xml_file>`: Replace this with the name of the XML file that represents the Bayesian network (e.g., `net.xml`).
+- `<query>`: Define your queries using the following format:
+`P(<Variable>=<outcome>|<Evidence1>=<outcome>,<Evidence2>=<outcome>,...),<Algorithm_Choice>`
+
+- `<Variable>`: The main variable being queried.
+- `<outcome>`: One of all the possible values that the variable can take.
+- `<Evidence>`: A given variable (which hasn't appeared yet) as evidence for the query.
+- `<Algorithm_Choice>`: The desired algorithm for the query.
+   - 1: Simple conclusion
+   - 2: Variable elimination by a, b, c... order
+   - 3: Variable elimination by appearance order
+
+Make sure to include all the algorithms (1, 2, and 3) for each query.
+
+### XML File
+Create an XML file named `net.xml` to represent the Bayesian network. The XML structure should follow the format below:
+
+```xml
+<network>
+<VARIABLE>
+ <!-- Define variables and their outcomes -->
+ <NAME>Variable1</NAME>
+ <OUTCOME>Outcome1</OUTCOME>
+ <OUTCOME>Outcome2</OUTCOME>
+ <!-- Add more outcomes if needed -->
+</VARIABLE>
+
+<VARIABLE>
+ <!-- Define another variable -->
+ <NAME>Variable2</NAME>
+ <OUTCOME>OutcomeA</OUTCOME>
+ <OUTCOME>OutcomeB</OUTCOME>
+ <!-- Add more outcomes if needed -->
+ <!-- Add <DEFINITION> for CPT table if the variable has parents -->
+ <DEFINITION>
+   <FOR>Variable2</FOR>
+   <GIVEN>Parent1</GIVEN>
+   <GIVEN>Parent2</GIVEN>
+   <!-- Add more <GIVEN> for additional parents -->
+   <TABLE>
+     0.8 0.2
+   </TABLE>
+ </DEFINITION>
+</VARIABLE>
+
+<!-- Define more variables with their outcomes and definitions if needed -->
+
+</network>
+```
+
+Make sure to replace <VARIABLE_NAME> and <OUTCOME> with appropriate names and outcomes, and define <DEFINITION> with conditional probability values for variables with parents.
 ## File Structure
 The project consists of several java classes including:
 
