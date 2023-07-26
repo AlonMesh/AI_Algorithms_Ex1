@@ -1,21 +1,38 @@
 import java.util.*;
-import java.util.stream.Collectors;
 
+/**
+ * Represents a variable in a Bayesian network.
+ * <p>
+ * A variable in a Bayesian network is a random variable or node that represents different factors or events of interest.
+ * Each variable can have one or more possible outcomes, also known as states. The relationships between variables are
+ * represented by conditional probability tables (CPTs) that define the probability of each outcome based on the values
+ * of its parent variables.
+ */
 public class Variable {
-    protected String name;
-    private List<String> outcomes; // The options for each variable
-    private List<Double> values; // Values of each outcome (and even more)
-    private List<Variable> givens; // If variable depends on another variables, list them. //add()
-    protected LinkedHashMap<String, Double> cpt;
+    protected String name; // The name of the variable
+    private ArrayList<String> outcomes; // The possible outcomes or states of the variable
+    private ArrayList<Double> values; // The values associated with each outcome
+    private ArrayList<Variable> givens; // The parent variables on which this variable depends
+    protected LinkedHashMap<String, Double> cpt; // The conditional probability table for the variable
 
+    /**
+     * Default constructor for the Variable class.
+     * Initializes the variable fields to empty values.
+     */
     public Variable() {
         String name = "";
-        List<String> outcomes = new ArrayList<String>();
-        List<Variable> givens = new ArrayList<Variable>();
-        List<Double> values = new ArrayList<Double>();
-        LinkedHashMap<String, Double> cpt = new LinkedHashMap<String, Double>();
+        List<String> outcomes = new ArrayList<>();
+        List<Variable> givens = new ArrayList<>();
+        List<Double> values = new ArrayList<>();
+        LinkedHashMap<String, Double> cpt = new LinkedHashMap<>();
     }
 
+    /**
+     * Copy constructor for the Variable class.
+     * Creates a new Variable object by copying the values from another Variable object.
+     *
+     * @param other The Variable object to be copied.
+     */
     public Variable(Variable other) {
         this.name = other.getName();
         this.outcomes = other.getOutcomes();
@@ -24,18 +41,31 @@ public class Variable {
         this.cpt = other.getCpt();
     }
 
-    //If we get all parameters but cpt, build (update) the cpt.
-    public Variable(String name, List<String> outcomes, List<Double> values, List<Variable> givens) {
+    /**
+     * Constructor for the Variable class with parameters.
+     * Creates a new Variable object with the specified name, outcomes, values, and parent variables.
+     *
+     * @param name The name of the variable.
+     * @param outcomes The possible outcomes or states of the variable.
+     * @param values The values associated with each outcome.
+     * @param givens The parent variables on which this variable depends.
+     */
+    public Variable(String name, ArrayList<String> outcomes, ArrayList<Double> values, ArrayList<Variable> givens) {
         this.name = name;
         this.outcomes = outcomes;
         this.values = values;
         this.givens = givens;
-        this.cpt = this.updateCPT();
+        updateCPT();
     }
 
-    //set values for the list values;
-    public LinkedHashMap<String, Double> updateCPT() {
-        LinkedHashMap<String, Double> CPT = new LinkedHashMap<String, Double>();
+
+    /**
+     * Updates the conditional probability table (CPT) for the variable based on its outcomes, values, and parent variables (givens).
+     * If the variable has no parent variables (givenAmount == 0), it creates a simple CPT where each outcome is mapped to its corresponding value.
+     * If the variable has parent variables, it creates a more complex CPT by combining the outcomes of the parent variables to build the key for the CPT entries.
+     */
+    public void updateCPT() {
+        LinkedHashMap<String, Double> CPT = new LinkedHashMap<>();
 
         String currOutcome;
         Double currValue;
@@ -49,10 +79,7 @@ public class Variable {
                 CPT.put(currOutcome, currValue);
             }
 
-            return CPT;
-        }
-
-        //else:
+        } else {
         /*  Rational:
             Multiply each given's outcome by all other given's outcomes.
             so we will have some strings that combine optional outcomes.
@@ -66,47 +93,53 @@ public class Variable {
             so we will check the key "twotv3", which return the double value in that index.
         */
 
-        int jumps = 1;
+            int jumps = 1;
 
-        for (Variable given : this.givens) {
-            jumps *= given.outcomes.size();
-        }
+            for (Variable given : this.givens) {
+                jumps *= given.outcomes.size();
+            }
 
-        String[] options = new String[jumps];
+            String[] options = new String[jumps];
 
-        for (int i = 0; i < options.length; i++) {
-            options[i] = "";
-        }
+            Arrays.fill(options, "");
 
-        int count = 1;
+            int count = 1;
 
-        for (Variable given : this.givens) {
-            jumps = jumps / given.outcomes.size();
-            count *= given.outcomes.size();
-            int currIndex = 0;
-            for (int i = 0; i < count; i++) { //*2
-                for (int j = 0; j < jumps; j++) {
-                    options[currIndex] = options[currIndex] + given.outcomes.get(i % given.outcomes.size());
-                    currIndex++;
+            for (Variable given : this.givens) {
+                jumps = jumps / given.outcomes.size();
+                count *= given.outcomes.size();
+                int currIndex = 0;
+                for (int i = 0; i < count; i++) { //*2
+                    for (int j = 0; j < jumps; j++) {
+                        options[currIndex] = options[currIndex] + given.outcomes.get(i % given.outcomes.size());
+                        currIndex++;
+                    }
+                }
+            }
+
+            List<String> tempOptionsList = Arrays.stream(options).toList();
+            List<Double> tempValuesList = this.values;
+
+            int place = 0;
+            for (String s : tempOptionsList) {
+                for (String outcome : this.outcomes) {
+                    CPT.put(s + outcome, tempValuesList.get(place));
+                    place++;
                 }
             }
         }
 
-        List<String> tempOptionsList = Arrays.stream(options).collect(Collectors.toList());
-        List<Double> tempValuesList = this.values;
-
-        int place = 0;
-        for (int i = 0; i < tempOptionsList.size(); i++) {
-            for (int j = 0; j < this.outcomes.size(); j++) {
-                CPT.put(tempOptionsList.get(i) + (this.outcomes.get(j)), tempValuesList.get(place));
-                place++;
-            }
-        }
-
-        return CPT;
+        // At the end of (if/else), set cpt
+        this.cpt = CPT;
     }
 
-    // This method takes another Variable as an argument and returns true if the other variable is an ancestor of the current variable, and false otherwise.
+    /**
+     * Checks if the current variable is a descendant (son) of any of the ancestor variables in the given list.
+     * It does this by recursively checking if any of its parent variables are in the list of ancestors.
+     *
+     * @param ancestors A list of ancestor variables to check.
+     * @return true if the current variable is a descendant of any of the ancestors, false otherwise.
+     */
     public boolean is_son(List<Variable> ancestors) {
         // Check if the list of ancestors is empty, in which case the variable cannot have an ancestor in the list
         if (ancestors.isEmpty()) {
@@ -133,10 +166,14 @@ public class Variable {
         return false;
     }
 
-    // This method returns a list of all the ancestors of the variable in the network
+    /**
+     * Returns a list of all the ancestors of the variable in the network.
+     *
+     * @return An ArrayList containing all the ancestor variables of the current variable.
+     */
     public ArrayList<Variable> getAncestors() {
         // Create an empty list of ancestors
-        ArrayList<Variable> ancestors = new ArrayList<Variable>();
+        ArrayList<Variable> ancestors = new ArrayList<>();
 
         // Get the list of parents for the variable
         List<Variable> parents = this.getGivens();
@@ -157,6 +194,12 @@ public class Variable {
         return ancestors;
     }
 
+    /**
+     * Checks if the other variable is an ancestor of the current variable.
+     *
+     * @param other The other Variable object to check for ancestor relationship.
+     * @return true if the other variable is an ancestor of the current variable, false otherwise.
+     */
     public boolean isAncestor(Variable other) {
         // Check if the other variable is an ancestor of this variable
         for (Variable ancestor : this.getAncestors()) {
@@ -168,6 +211,15 @@ public class Variable {
     }
 
 
+    /**
+     * Calculates and returns the probability of a given string representation of outcomes for the variable.
+     * If this variable has no parent variables (givens), it directly looks up the probability in the CPT based on the provided string.
+     * If the variable has parent variables, it builds the key for the CPT using the values of the given variables stored in the evidences field of the Network.
+     *
+     * @param str     The string representation of outcomes for which to calculate the probability.
+     * @param network The Network object containing the evidences used to build the key for CPT (in case of parent variables).
+     * @return The probability value corresponding to the provided string in the CPT.
+     */
     public double getProb(String str, Network network) {
 
         // If this variable has no givens, return the probability value corresponding to str in the cpt
@@ -186,27 +238,29 @@ public class Variable {
         if (this.cpt.get(str) != null)
             return this.cpt.get(str);
 
-        //else (which means -> this.givens.size() > 0)
+        // else (which means: this.givens.size() > 0)
 
         // If this variable has givens,
         // Build the key for the cpt using the values of the given variables as stored in the
         // evidences field of the Network
 
-        str = "";
-
+        StringBuilder strBuilder = new StringBuilder();
         for (Variable variable : this.givens) {
-            str = str + network.getEvidences().get(variable.getName());
+            strBuilder.append(network.getEvidences().get(variable.getName()));
         }
 
 
-        for (int i = 0; i < this.outcomes.size() ; i++) {
-            if (network.getEvidences().get(this.name).equals(this.outcomes.get(i))) {
-                str = str + this.outcomes.get(i);
+        for (String outcome : this.outcomes) {
+            if (network.getEvidences().get(this.name).equals(outcome)) {
+                strBuilder.append(outcome);
             }
         }
-        return this.cpt.get(str);
+        return this.cpt.get(strBuilder.toString());
     }
 
+    /**
+     * Prints information about the variable, including its name, outcomes, parent variables (givens), and values.
+     */
     public void print() {
         System.out.println("Variable " + this.name);
         System.out.println("has " + this.outcomes.size() + " out comes: " + outcomes);
@@ -222,32 +276,16 @@ public class Variable {
         return name;
     }
 
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public List<String> getOutcomes() {
+    public ArrayList<String> getOutcomes() {
         return outcomes;
     }
 
-    public void setOutcomes(List<String> outcomes) {
-        this.outcomes = outcomes;
-    }
-
-    public List<Variable> getGivens() {
+    public ArrayList<Variable> getGivens() {
         return givens;
     }
 
-    public void setGivens(List<Variable> givens) {
-        this.givens = givens;
-    }
-
-    public List<Double> getValues() {
+    public ArrayList<Double> getValues() {
         return values;
-    }
-
-    public void setValues(List<Double> values) {
-        this.values = values;
     }
 
     public LinkedHashMap<String, Double> getCpt() {
