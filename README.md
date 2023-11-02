@@ -1,10 +1,38 @@
-# Variable_Elimination_Algorithm
+# Variable Elimination Algorithm
 
 ## Overview
 This project is a Bayesian Network implementation that uses Variable Elimination (VE) algorithm to perform probabilistic inference. The network and the queries are read from an XML file and an input file respectively.
 This project was made as exhbit of the course "AI algorithms".
 
-## How to Run
+This implementation of Bayesian Network using Variable Elimination algorithm can be used for performing probabilistic inference on different types of networks and queries.
+
+The project compares the performance of three algorithms for finding probability in a graphical model. The algorithms compared are:
+
+1. **Simple conclusion:** A basic algorithm for finding probability in a graphical model.
+2. **Variable Elimination** Algorithm with ABC elimination order: An optimized algorithm that uses the ABC elimination order to find probability in a graphical model.
+3. **Variable Elimination Algorithm with custom heuristic elimination order:** An optimized algorithm that uses a custom heuristic elimination order based on the number of appearances of variables in factors to find probability in a graphical model.
+
+The project includes the implementation of each algorithm and the calculation of both the probability and the number of additions and multiplications required for each algorithm.
+
+
+![img.png](img.png)
+
+---
+## Background - Variable Elimination Algorithm
+Variable Elimination is a fundamental algorithm in the field of probabilistic graphical models and probabilistic inference. It is primarily used for efficiently computing marginal probabilities and conditional probabilities in Bayesian networks and Markov networks.
+
+This algorithm systematically eliminates variables from a given probabilistic model by using the properties of conditional probability and factorization. By iteratively performing a sequence of operations that involve summing out or marginalizing variables, Variable Elimination simplifies complex probabilistic models, making it easier to answer probabilistic queries.
+
+Variable Elimination plays a crucial role in probabilistic reasoning, as it enables us to handle probabilistic models with a large number of variables more effectively, reducing computational complexity and facilitating efficient inference. It is a key component in various applications, including medical diagnosis, natural language processing, and decision support systems, where probabilistic reasoning is vital for making informed decisions under uncertainty.
+
+![img_2.png](img_2.png)
+
+For more information, see:
+1. https://ermongroup.github.io/cs228-notes/inference/ve/
+2. https://wiki.ubc.ca/Course:CPSC522/Variable_Elimination
+3. https://en.wikipedia.org/wiki/Variable_elimination
+
+---
 
 ## How to Run
 
@@ -103,13 +131,5 @@ The project consists of several java classes including:
 * **ReadTXT.java** which contains methods for reading the input file and parsing its contents.
 * **ReadXML.java** which contains methods for reading the XML file and parsing its contents.
 
-## Conclusion
-This implementation of Bayesian Network using Variable Elimination algorithm can be used for performing probabilistic inference on different types of networks and queries. However, it is worth noting that the performance of the algorithm may be affected by the structure of the network and the order of elimination of variables. The project compares the performance of three algorithms for finding probability in a graphical model. The algorithms compared are:
-
-1. **Simple conclusion:** A basic algorithm for finding probability in a graphical model.
-2. **Variable Elimination** Algorithm with ABC elimination order: An optimized algorithm that uses the ABC elimination order to find probability in a graphical model.
-3. **Variable Elimination Algorithm with custom heuristic elimination order:** An optimized algorithm that uses a custom heuristic elimination order based on the number of appearances of variables in factors to find probability in a graphical model.
-
-The project includes the implementation of each algorithm and the calculation of both the probability and the number of additions and multiplications required for each algorithm.
-
 ![image](https://user-images.githubusercontent.com/97172662/212310971-c9cde4f4-c974-4ecd-a06a-c571f582f25e.png)
+
